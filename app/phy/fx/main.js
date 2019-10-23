@@ -48,17 +48,17 @@ function doCbaam() {
                 ScriptApp.getScriptId(),
                 new Date()]);
             //reportIf
-            // for (var j in output_report_mailaddresses) {
-            //     try {
-            //         MailApp.sendEmail(
-            //             output_report_mailaddresses[j], //to
-            //             currency + ": " + myGetNthElementText(items[i], "title", " - ", 2), //subject
-            //             "" //body
-            //         );
-            //     } catch (e) {
-            //         Logger.log(e)
-            //     }
-            // }
+            for (var j in output_report_mailaddresses) {
+                try {
+                    MailApp.sendEmail(
+                        output_report_mailaddresses[j], //to
+                        currency + ": " + myGetNthElementText(items[i], "title", " - ", 2), //subject
+                        "" //body
+                    );
+                } catch (e) {
+                    Logger.log(e)
+                }
+            }
         }
     }
 }
