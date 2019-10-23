@@ -1,0 +1,10 @@
+#ignore all files
+**/**
+
+#except
+!main.js
+!config.js
+!appsscript.json
+
+!**/*.gs
+!**/*.js
