@@ -10,8 +10,8 @@
 //to be called from triggers
 function main() {
     init();
-    doCbaam();
-    doEcb();
+    if (isArmenianworkingday()) { doCbaam() }
+    if (isGermanbankworkingday()) { doEcb() }
 }
 
 //reading RSS feed and persiting to Google Sheet
@@ -184,6 +184,13 @@ function emailReport() {
 
 function init() {
 
+    try {
+        DriveApp.openById(output_spreadsheetId)
+    } catch (e) {
+        //     //fixme does not trigger
+        //     errorHandler(e, 'init')
+    }
+
     tocheck = [output_cbaam_sheetname, output_ecbusd_sheetname]
 
     for (var i = 0; i < tocheck.length; i++) {
@@ -203,3 +210,8 @@ function init() {
     }
 
 }
+
+// function errorHandler(e, functionname) {
+//     throw new Error("An error occurred in " + functionname);
+//     Logger.log(JSON.stringify(e))
+// }

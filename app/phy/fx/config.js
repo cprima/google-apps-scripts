@@ -1,5 +1,9 @@
+
+//per-installation configuration
+var output_spreadsheetId = "FIXME"
+
 //general
-var output_report_mailaddresses = ["cprior@gmail.com", "arminemamulyan1@gmail.com"];
+var output_report_mailaddresses = ["joe@example.com"];
 var datatemplate = {
     guid: '',
     title: '',
@@ -14,7 +18,6 @@ var datatemplate = {
 
 //cba
 var input_cbaam_feedurl = "https://www.cba.am/_layouts/rssreader.aspx?rss=280F57B8-763C-4EE4-90E0-8136C13E47DA";
-var output_spreadsheetId = "1phpfJD2aPkxjL5KUg_OMSdJ3q80UtW5YuA34v3mFVjw"
 var output_cbaam_sheetname = 'cba.am';
 var process_cbaam_currencies = ["EUR", "USD"];
 

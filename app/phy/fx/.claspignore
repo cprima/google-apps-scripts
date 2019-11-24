@@ -5,6 +5,7 @@
 !main.js
 !config.js
 !appsscript.json
+!date.json
 
 !**/*.gs
 !**/*.js
