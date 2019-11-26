@@ -90,6 +90,9 @@ function getSilvester(year) {
     return new Date(year, 11, 31);
 }
 
+//returns true if Jan 1st or Good Friday or Easter or easter Monday or
+//Ascencion day or Whit Sunday or monday after Whit Sunday or May 1st or
+// Oct 3rd or Dec 25th or Dec 25th
 function isGermannationwideholiday(year, month, day) {
     dt = new Date(year, month - 1, day);
     if (dt.getTime() === getEaster(year).getTime()
@@ -109,21 +112,26 @@ function isGermannationwideholiday(year, month, day) {
     }
 }
 
+//returns true if monday thru friday and not a nationwide holiday
 function isGermanworkingday(year, month, day) {
     dt = new Date(year, month - 1, day);
-    if (dt.getDay() != 6 && dt.getDay() != 0 && isGermannationwideholiday(year, month, day) === false) {
+    if (dt.getDay() != 6 && dt.getDay() != 0
+        && isGermannationwideholiday(year, month, day) === false) {
         return true;
     } else { return false; }
 }
 
+//returns true if monday thru friday and not a nationwide German holiday and not Dec 24th and not Dec 31st
 function isGermanbankworkingday(year, month, day) {
     dt = new Date(year, month - 1, day);
-    if (isGermanworkingday(year, month, day) === true && dt.getTime() !== getHeiligabend(year).getTime() && dt.getTime() !== getSilvester(year).getTime()) {
+    if (isGermanworkingday(year, month, day) === true
+        && dt.getTime() !== getHeiligabend(year).getTime()
+        && dt.getTime() !== getSilvester(year).getTime()) {
         return true;
     } else { return false; }
 }
 
-
+//returns true for sixteen fiexed dates througout the year
 function isArmenianPublicholiday(year, month, day) {
     dt = new Date(year, month - 1, day);
     console.log(dt)
@@ -147,6 +155,7 @@ function isArmenianPublicholiday(year, month, day) {
     } else { return false; }
 }
 
+//returns true if Mon-Fri and not an Armenian holiday
 function isArmenianworkingday(year, month, day) {
     dt = new Date(year, month - 1, day);
     if (dt.getDay() != 6 && dt.getDay() != 0 && isArmenianPublicholiday(year, month, day) === false) {
