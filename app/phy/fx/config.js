@@ -1,9 +1,12 @@
 
 //per-installation configuration
 var output_spreadsheetId = "1phpfJD2aPkxjL5KUg_OMSdJ3q80UtW5YuA34v3mFVjw"
+var output_chartfileid = "1AnA9VFFnOrQK4cwJDFSJV2D7qD_jV5vT"
+var output_chartfilename = "AMD-EUR-USD.png";
 
 //general
 var output_report_mailaddresses = ["cprior@gmail.com", "arminemamulyan1@gmail.com"];
+var output_report_subject = "Daily AMD/USD/EUR graph";
 var datatemplate = {
     guid: '',
     title: '',
@@ -24,3 +27,6 @@ var process_cbaam_currencies = ["EUR", "USD"];
 //ecb
 var input_ecbusd_feedurl = "https://www.ecb.europa.eu/rss/fxref-usd.html";
 var output_ecbusd_sheetname = 'ecb';
+
+//visualization
+var output_visualization_sheetname = 'vizAMD-USD-EUR';

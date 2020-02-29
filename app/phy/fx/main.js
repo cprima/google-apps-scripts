@@ -12,6 +12,7 @@ function main() {
     init();
     if (isArmenianworkingday()) { doCbaam() }
     if (isGermanbankworkingday()) { doEcb() }
+    updateGraphFile()
 }
 
 //reading RSS feed and persiting to Google Sheet
@@ -155,32 +156,49 @@ function appendRowIfNotExists(spreadsheetId, sheetName, data, baseCurrency) {
     }
 }
 
-//https://stackoverflow.com/a/22200230/9576512
-function emailReport() {
-    var charts = SpreadsheetApp.openById(output_spreadsheetId).getSheetByName('vizAMD-USD-EUR').getCharts();
-    Logger.log(charts);
+//returns the first chart found in a given spreadsheet's sheet
+function getChartBlob(sheetname) {
+    var charts = SpreadsheetApp.openById(output_spreadsheetId).getSheetByName(sheetname).getCharts();
     if (charts.length > 0) {
-
-        var chartBlobs = new Array(charts.length);
-        var emailBody = "Charts<br>";
-        var emailImages = {};
-        for (var i = 0; i < charts.length; i++) {
-            chartBlobs[i] = charts[i].getAs("image/png").setName("chartBlob" + i);
-            emailBody = emailBody + "<img src='cid:chart" + i + "'><br>";
-            emailImages["chart" + i] = chartBlobs[i];
-        }
-
-        MailApp.sendEmail({
-            to: 'cprior@gmail.com',
-            subject: 'chart',
-            htmlBody: emailBody,
-            inlineImages: emailImages
-        });
-
-
+        return charts[0].getAs("image/png");
     }
 }
 
+//https://stackoverflow.com/a/22200230/9576512
+function emailReport() {
+    var chart = getChartBlob('vizAMD-USD-EUR');
+    var emailBody = "Charts<br>" + "<img src='cid:chart" + "'><br>";
+    emailImages = {};
+    emailImages["chart"] = chart;
+
+    for (var i in output_report_mailaddresses) {
+        MailApp.sendEmail({
+            to: output_report_mailaddresses[i],
+            subject: output_report_subject,
+            htmlBody: emailBody,
+            inlineImages: emailImages
+        });
+    }
+
+}
+
+//http://drive.google.com/uc?id=1QmDis_Qzhy6DEdGTQ6exLRIKKGuGxCmY
+function updateGraphFile() {
+
+    folder = DriveApp.getFolderById(output_spreadsheetId).getParents().next()
+
+    var chart = getChartBlob(output_visualization_sheetname);
+
+    try {
+        var file = DriveApp.getFileById(output_chartfileid);
+        //https://stackoverflow.com/a/24226885/9576512
+        //Resources > Advanced Google services
+        Drive.Files.update({ mimeType: 'image/png' }, file.getId(), chart);
+    } catch (e) {
+        folder.createFile(chart.setName(output_chartfilename))
+    }
+
+}
 
 function init() {
 

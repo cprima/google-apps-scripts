@@ -2,6 +2,8 @@
 
 A script to fetch exchange rates for the Armenian Dram and the EUR/USD from the European Central Bank as reference. The script calls the RSS feed from these central banks.
 
+![Graph](http://drive.google.com/uc?id=1QmDis_Qzhy6DEdGTQ6exLRIKKGuGxCmY)
+
 # Requirements
 
 clasp https://github.com/google/clasp
