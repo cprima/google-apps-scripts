@@ -1,9 +1,9 @@
 
 //per-installation configuration
-var output_spreadsheetId = "FIXME"
+var output_spreadsheetId = "1phpfJD2aPkxjL5KUg_OMSdJ3q80UtW5YuA34v3mFVjw"
 
 //general
-var output_report_mailaddresses = ["joe@example.com"];
+var output_report_mailaddresses = ["cprior@gmail.com", "arminemamulyan1@gmail.com"];
 var datatemplate = {
     guid: '',
     title: '',

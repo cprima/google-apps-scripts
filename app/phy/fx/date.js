@@ -1,4 +1,11 @@
 
+/**
+ * Helper functions to calculate bank working days in Armenia and Germany.
+ *
+ * @author: Christian Prior-Mamulyan <cprior@gmail.com>
+ * @license: MIT
+ *
+ */
 
 /**
 * Calculates Easter in the Gregorian/Western (Catholic and Protestant) calendar 
@@ -158,7 +165,9 @@ function isArmenianPublicholiday(year, month, day) {
 //returns true if Mon-Fri and not an Armenian holiday
 function isArmenianworkingday(year, month, day) {
     dt = new Date(year, month - 1, day);
-    if (dt.getDay() != 6 && dt.getDay() != 0 && isArmenianPublicholiday(year, month, day) === false) {
+    if (dt.getDay() != 6
+        && dt.getDay() != 0
+        && isArmenianPublicholiday(year, month, day) === false) {
         return true;
     } else { return false; }
 }
