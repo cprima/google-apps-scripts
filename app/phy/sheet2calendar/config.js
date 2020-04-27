@@ -17,7 +17,7 @@ var datatemplate = {
 };
 
 //schichtplanung
-var dienstzeitenTimereferenced = {
+var shiftinfo = {
     'F': {
         from: new Date('2020-01-01'),
         thru: new Date('2099-12-31'),

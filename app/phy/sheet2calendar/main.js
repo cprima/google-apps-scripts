@@ -1,6 +1,8 @@
 /**
  * Inserting events from Google Sheets spreadsheet into Google calendar
  *
+ * Ctrl R to run (with `main` selected)
+ *
  * @author: Christian Prior-Mamulyan <cprior@gmail.com>
  * @license: MIT
  *
@@ -115,7 +117,7 @@ function calculateStartEndFromSchichtid(date, schichtId) {
         throw new Error("ouch") //fixme
     }
     //var schichtinfo = schichtplanung['Dienstzeiten'][schichtId]; //deprecated
-    var schichtinfo = buildSchichtinfo(schichtId, date);
+    var schichtinfo = buildShiftinfo(schichtId, date);
     var start_time = new Date(date);
     start_time.setHours(schichtinfo['start_time_hours']);
     start_time.setMinutes(schichtinfo['start_time_minutes']);
@@ -134,12 +136,12 @@ function calculateStartEndFromSchichtid(date, schichtId) {
 }
 
 //for a specific date and schichtId, get the configured start and end (and offset) info
-function buildSchichtinfo(schichtId, when) {
-    for (var k in dienstzeitenTimereferenced) {
+function buildShiftinfo(schichtId, when) {
+    for (var k in shiftinfo) {
         if (schichtId == k
-            && dienstzeitenTimereferenced[k].from.setHours(0, 0, 0, 0) <= when
-            && dienstzeitenTimereferenced[k].thru.setHours(23, 59, 59, 0) >= when) {
-            return dienstzeitenTimereferenced[k];
+            && shiftinfo[k].from.setHours(0, 0, 0, 0) <= when
+            && shiftinfo[k].thru.setHours(23, 59, 59, 0) >= when) {
+            return shiftinfo[k];
         }
     }
 }
