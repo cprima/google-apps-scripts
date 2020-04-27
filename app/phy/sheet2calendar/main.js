@@ -10,15 +10,15 @@
 //to be called from triggers
 function main() {
     init();
-    initialTest();
+    worker();
 }
 
 
-function initialTest() {
+function worker() {
     var sheet = SpreadsheetApp.openById(input_spreadsheetId).getSheetByName(input_sheetName);
     var calendar = CalendarApp.getCalendarById(output_calendarId);
 
-    var events = calendar.getEvents(new Date('2019-01-01'), new Date('2020-12-31'));
+    //var events = calendar.getEvents(new Date('2020-05-01'), new Date('2020-05-02'));
     //Logger.log(events)
 
     //https://mashe.hawksey.info/2018/02/google-apps-script-patterns-conditionally-updating-rows-of-google-sheet-data-by-reading-and-writing-data-once/
@@ -33,7 +33,8 @@ function initialTest() {
     //Logger.log(data)
     var header = data.shift();
     var action_col = header.indexOf("action");
-    var email_sent_col = header.indexOf("updated_at");
+    var location_col = header.indexOf("Location");
+    var schichtid_col = header.indexOf("SchichtID");
     var created_at_col = header.indexOf("created_at");
     var updated_at_col = header.indexOf("updated_at");
     var event_id_col = header.indexOf("event_id");
@@ -53,7 +54,11 @@ function initialTest() {
     // loop through all the data
     obj.forEach(function (row, rowIdx) {
         //only work on rows that were not filtered out
-        if (row.is_filtered === false && row.SchichtID != '' && (row.action === '' || row.action === 'CREATE')) {
+        if (row.is_filtered === false && row.SchichtID != '' && (row.action === '' || row.action === 'CREATE' || row.action === 'UPDATE')) {
+            if (row.action === 'UPDATE') {
+                //
+                calendar.getEventById(row.event_id).deleteEvent();
+            }
 
             var foo = calculateStartEndFromSchichtid(row.date, row.SchichtID);
             try {
@@ -64,8 +69,8 @@ function initialTest() {
                         'location': row.Location,
                         'description': foo.description
                     });
-                data[rowIdx][action_col] = 'UPDATE';
-                data[rowIdx][created_at_col] = new Date();
+                data[rowIdx][action_col] = 'READ';
+                data[rowIdx][created_at_col] = new Date(); //check UPDATE (also gets a new Date)
                 data[rowIdx][updated_at_col] = new Date();
                 data[rowIdx][event_id_col] = event.getId();
             } catch (e) {
@@ -73,6 +78,15 @@ function initialTest() {
                 data[rowIdx][updated_at_col] = e.message;
             }
 
+        }
+
+        if (row.action === 'DELETE') {
+            calendar.getEventById(row.event_id).deleteEvent();
+            data[rowIdx][updated_at_col] = new Date();
+            data[rowIdx][action_col] = 'READ';
+            data[rowIdx][schichtid_col] = '';
+            data[rowIdx][location_col] = '';
+            data[rowIdx][event_id_col] = '';
         }
     });
 
@@ -84,7 +98,7 @@ function initialTest() {
 
     //Logger.log(data)
 
-    //overwrites formulas!!!
+    //overwrites formulas in cells, if present
     dataRange.offset(1, 0, data.length).setValues(data);
 
     // //https://stackoverflow.com/a/58042736/9576512
@@ -100,7 +114,8 @@ function calculateStartEndFromSchichtid(date, schichtId) {
     if (date === undefined && schichtId === undefined) {
         throw new Error("ouch") //fixme
     }
-    var schichtinfo = schichtplanung['Dienstzeiten'][schichtId];
+    //var schichtinfo = schichtplanung['Dienstzeiten'][schichtId]; //deprecated
+    var schichtinfo = buildSchichtinfo(schichtId, date);
     var start_time = new Date(date);
     start_time.setHours(schichtinfo['start_time_hours']);
     start_time.setMinutes(schichtinfo['start_time_minutes']);
@@ -118,7 +133,16 @@ function calculateStartEndFromSchichtid(date, schichtId) {
     return retobj;
 }
 
-
+//for a specific date and schichtId, get the configured start and end (and offset) info
+function buildSchichtinfo(schichtId, when) {
+    for (var k in dienstzeitenTimereferenced) {
+        if (schichtId == k
+            && dienstzeitenTimereferenced[k].from.setHours(0, 0, 0, 0) <= when
+            && dienstzeitenTimereferenced[k].thru.setHours(23, 59, 59, 0) >= when) {
+            return dienstzeitenTimereferenced[k];
+        }
+    }
+}
 
 function init() {
 
