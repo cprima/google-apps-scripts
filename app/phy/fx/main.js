@@ -9,9 +9,8 @@
 
 //to be called from triggers
 function main() {
-    init();
-    if (isArmenianworkingday()) { doCbaam() }
-    if (isGermanbankworkingday()) { doEcb() }
+    doCbaam()
+    doEcb()
     updateGraphFile()
 }
 
@@ -25,28 +24,33 @@ function main() {
 </item>
 */
 function doCbaam() {
+    init();
+    if (isArmenianworkingday()) {
+        //read RSS
+        root = getFeedDocument(input_cbaam_feedurl);
 
-    //read RSS
-    root = getFeedDocument(input_cbaam_feedurl);
-    //get the items of interest
-    var items = root.getChild('channel').getChildren('item');
+        if (root !== false) {
+            //get the items of interest
+            var items = root.getChild('channel').getChildren('item');
 
-    for (var i in items) {
+            for (var i in items) {
 
-        data = datatemplate;
+                data = datatemplate;
 
-        data.id = items[i].getChild('guid').getValue();
-        data.title = items[i].getChild('title').getText();
-        data.date = new Date(items[i].getChild('pubDate').getText());
-        data.rate = parseFloat(myGetNthElementFromSplitText(items[i], "title", " - ", 2));
-        data.multiplier = myGetNthElementFromSplitText(items[i], "title", " - ", 1);
-        data.currency = myGetNthElementFromSplitText(items[i], "title", " - ", 0);
+                data.id = items[i].getChild('guid').getValue();
+                data.title = items[i].getChild('title').getText();
+                data.date = new Date(items[i].getChild('pubDate').getText());
+                data.rate = parseFloat(myGetNthElementFromSplitText(items[i], "title", " - ", 2));
+                data.multiplier = myGetNthElementFromSplitText(items[i], "title", " - ", 1);
+                data.currency = myGetNthElementFromSplitText(items[i], "title", " - ", 0);
 
-        //attempt to insert only selected currencies
-        if (process_cbaam_currencies.indexOf(data.currency) >= 0) {
-            appendRowIfNotExists(output_spreadsheetId, output_cbaam_sheetname, data, 'AMD');
+                //attempt to insert only selected currencies
+                if (process_cbaam_currencies.indexOf(data.currency) >= 0) {
+                    appendRowIfNotExists(output_spreadsheetId, output_cbaam_sheetname, data, 'AMD');
+                }
+            }
         }
-    }
+    }//end if isArmenianworkingday()
 }
 
 //reading RSS feed and persiting to Google Sheet
@@ -71,41 +75,44 @@ function doCbaam() {
 */
 //@see: https://www.ecb.europa.eu/rss/fxref-usd.html
 function doEcb() {
+    init();
+    if (isGermanbankworkingday()) {
+        var ns = XmlService.getNamespace('http://purl.org/rss/1.0/');
+        var dc = XmlService.getNamespace('http://purl.org/dc/elements/1.1/');
+        var cb = XmlService.getNamespace('http://www.cbwiki.net/wiki/index.php/Specification_1.1');
+        var rdf = XmlService.getNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
 
-    var ns = XmlService.getNamespace('http://purl.org/rss/1.0/');
-    var dc = XmlService.getNamespace('http://purl.org/dc/elements/1.1/');
-    var cb = XmlService.getNamespace('http://www.cbwiki.net/wiki/index.php/Specification_1.1');
-    var rdf = XmlService.getNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#');
+        //read RSS
+        root = getFeedDocument(input_ecbusd_feedurl);
 
-    //read RSS
-    root = getFeedDocument(input_ecbusd_feedurl);
+        if (root !== false) {
+            //get the items of interest
+            var items = root.getChildren('item', ns);
 
-    //get the items of interest
-    var items = root.getChildren('item', ns);
+            for (var i = 0; i < items.length; i++) {
+                data = datatemplate;
 
-    for (var i = 0; i < items.length; i++) {
-        data = datatemplate;
+                data.id = items[i].getAttribute('about', rdf).getValue();
+                data.title = items[i].getChild('title', ns).getText();
+                data.date = new Date(items[i].getChild('date', dc).getText());
+                data.rate = parseFloat(items[i].getChild('statistics', cb)
+                    .getChild('exchangeRate', cb)
+                    .getChild('value', cb).getValue());
+                data.multiplier = Math.pow(10, parseInt(items[i]
+                    .getChild('statistics', cb)
+                    .getChild('exchangeRate', cb)
+                    .getChild('baseCurrency', cb)
+                    .getAttribute('unit_mult')
+                    .getValue()));
+                data.currency = items[i].getChild('statistics', cb).getChild('exchangeRate', cb).getChild('targetCurrency', cb).getValue();
 
-        data.id = items[i].getAttribute('about', rdf).getValue();
-        data.title = items[i].getChild('title', ns).getText();
-        data.date = new Date(items[i].getChild('date', dc).getText());
-        data.rate = parseFloat(items[i].getChild('statistics', cb)
-            .getChild('exchangeRate', cb)
-            .getChild('value', cb).getValue());
-        data.multiplier = Math.pow(10, parseInt(items[i]
-            .getChild('statistics', cb)
-            .getChild('exchangeRate', cb)
-            .getChild('baseCurrency', cb)
-            .getAttribute('unit_mult')
-            .getValue()));
-        data.currency = items[i].getChild('statistics', cb).getChild('exchangeRate', cb).getChild('targetCurrency', cb).getValue();
+                //attempt to insert
+                appendRowIfNotExists(output_spreadsheetId, output_ecbusd_sheetname, data, 'EUR');
 
-        //attempt to insert
-        appendRowIfNotExists(output_spreadsheetId, output_ecbusd_sheetname, data, 'EUR');
-
-        //Logger.log('%s (%s) from %s with %s for %s times %s', data.title, data.id, data.date, data.rate, data.currency, data.multiplier);
-    }
-
+                //Logger.log('%s (%s) from %s with %s for %s times %s', data.title, data.id, data.date, data.rate, data.currency, data.multiplier);
+            }
+        }
+    }//end if isGermanbankworkingday()
 }
 
 function myGetNthElementFromSplitText(item, elementname, splitstring, position) {
@@ -184,6 +191,7 @@ function emailReport() {
 
 //http://drive.google.com/uc?id=1QmDis_Qzhy6DEdGTQ6exLRIKKGuGxCmY
 function updateGraphFile() {
+    init();
 
     folder = DriveApp.getFolderById(output_spreadsheetId).getParents().next()
 
