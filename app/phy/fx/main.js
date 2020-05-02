@@ -28,23 +28,26 @@ function doCbaam() {
 
     //read RSS
     root = getFeedDocument(input_cbaam_feedurl);
-    //get the items of interest
-    var items = root.getChild('channel').getChildren('item');
 
-    for (var i in items) {
+    if (root !== false) {
+        //get the items of interest
+        var items = root.getChild('channel').getChildren('item');
 
-        data = datatemplate;
+        for (var i in items) {
 
-        data.id = items[i].getChild('guid').getValue();
-        data.title = items[i].getChild('title').getText();
-        data.date = new Date(items[i].getChild('pubDate').getText());
-        data.rate = parseFloat(myGetNthElementFromSplitText(items[i], "title", " - ", 2));
-        data.multiplier = myGetNthElementFromSplitText(items[i], "title", " - ", 1);
-        data.currency = myGetNthElementFromSplitText(items[i], "title", " - ", 0);
+            data = datatemplate;
 
-        //attempt to insert only selected currencies
-        if (process_cbaam_currencies.indexOf(data.currency) >= 0) {
-            appendRowIfNotExists(output_spreadsheetId, output_cbaam_sheetname, data, 'AMD');
+            data.id = items[i].getChild('guid').getValue();
+            data.title = items[i].getChild('title').getText();
+            data.date = new Date(items[i].getChild('pubDate').getText());
+            data.rate = parseFloat(myGetNthElementFromSplitText(items[i], "title", " - ", 2));
+            data.multiplier = myGetNthElementFromSplitText(items[i], "title", " - ", 1);
+            data.currency = myGetNthElementFromSplitText(items[i], "title", " - ", 0);
+
+            //attempt to insert only selected currencies
+            if (process_cbaam_currencies.indexOf(data.currency) >= 0) {
+                appendRowIfNotExists(output_spreadsheetId, output_cbaam_sheetname, data, 'AMD');
+            }
         }
     }
 }
@@ -80,32 +83,33 @@ function doEcb() {
     //read RSS
     root = getFeedDocument(input_ecbusd_feedurl);
 
-    //get the items of interest
-    var items = root.getChildren('item', ns);
+    if (root !== false) {
+        //get the items of interest
+        var items = root.getChildren('item', ns);
 
-    for (var i = 0; i < items.length; i++) {
-        data = datatemplate;
+        for (var i = 0; i < items.length; i++) {
+            data = datatemplate;
 
-        data.id = items[i].getAttribute('about', rdf).getValue();
-        data.title = items[i].getChild('title', ns).getText();
-        data.date = new Date(items[i].getChild('date', dc).getText());
-        data.rate = parseFloat(items[i].getChild('statistics', cb)
-            .getChild('exchangeRate', cb)
-            .getChild('value', cb).getValue());
-        data.multiplier = Math.pow(10, parseInt(items[i]
-            .getChild('statistics', cb)
-            .getChild('exchangeRate', cb)
-            .getChild('baseCurrency', cb)
-            .getAttribute('unit_mult')
-            .getValue()));
-        data.currency = items[i].getChild('statistics', cb).getChild('exchangeRate', cb).getChild('targetCurrency', cb).getValue();
+            data.id = items[i].getAttribute('about', rdf).getValue();
+            data.title = items[i].getChild('title', ns).getText();
+            data.date = new Date(items[i].getChild('date', dc).getText());
+            data.rate = parseFloat(items[i].getChild('statistics', cb)
+                .getChild('exchangeRate', cb)
+                .getChild('value', cb).getValue());
+            data.multiplier = Math.pow(10, parseInt(items[i]
+                .getChild('statistics', cb)
+                .getChild('exchangeRate', cb)
+                .getChild('baseCurrency', cb)
+                .getAttribute('unit_mult')
+                .getValue()));
+            data.currency = items[i].getChild('statistics', cb).getChild('exchangeRate', cb).getChild('targetCurrency', cb).getValue();
 
-        //attempt to insert
-        appendRowIfNotExists(output_spreadsheetId, output_ecbusd_sheetname, data, 'EUR');
+            //attempt to insert
+            appendRowIfNotExists(output_spreadsheetId, output_ecbusd_sheetname, data, 'EUR');
 
-        //Logger.log('%s (%s) from %s with %s for %s times %s', data.title, data.id, data.date, data.rate, data.currency, data.multiplier);
+            //Logger.log('%s (%s) from %s with %s for %s times %s', data.title, data.id, data.date, data.rate, data.currency, data.multiplier);
+        }
     }
-
 }
 
 function myGetNthElementFromSplitText(item, elementname, splitstring, position) {
@@ -134,7 +138,7 @@ function getFeedDocument(url) {
     //var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
     var response = UrlFetchApp.fetch(url); //monitor this for a while in production
     var responseCode = response.getResponseCode();
-    Logger.log(responseCode)
+    // Logger.log(responseCode)
 
     //cba.am sometimes returns with 200 when in fact:
     //Error occured , please check URLSystem.Net.WebException: Unable to connect to the remote server
@@ -143,12 +147,14 @@ function getFeedDocument(url) {
             return XmlService.parse(response.getContentText()).getRootElement()
         }
         catch (err) {
-            Logger.log(err)
-            throw new Error(Utilities.formatString("Cannot parse feed %s", url));
+            //Logger.log(err)
+            return false
+            //throw new Error(Utilities.formatString("Cannot parse feed %s", url));
         }
     } else {
-        Logger.log(Utilities.formatString("Request failed. Expected 200, got %d", responseCode))
-        throw new Error(Utilities.formatString("Cannot fetch feed from %s", url));
+        return false
+        // Logger.log(Utilities.formatString("Request failed. Expected 200, got %d", responseCode))
+        // throw new Error(Utilities.formatString("Cannot fetch feed from %s", url));
     }
     // }
     // catch (err) {
