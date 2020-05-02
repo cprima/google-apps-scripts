@@ -137,7 +137,23 @@ function getColumnValues(sheet, colNum) {
 
 //returns the parsed XML from a RSS feed location
 function getFeedDocument(url) {
-    return XmlService.parse(UrlFetchApp.fetch(url).getContentText()).getRootElement();
+
+    var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    //var response = UrlFetchApp.fetch(url); //cba.am strangely returns with 200 but fetch fails hard
+    var responseCode = response.getResponseCode();
+
+    //cba.am sometimes returns with 200 when in fact:
+    //Error occured , please check URLSystem.Net.WebException: Unable to connect to the remote server
+    if (responseCode === 200) {
+        try {
+            return XmlService.parse(response.getContentText()).getRootElement()
+        }
+        catch (err) {
+            return false
+        }
+    } else {
+        return false
+    }
 }
 
 function appendRowIfNotExists(spreadsheetId, sheetName, data, baseCurrency) {
