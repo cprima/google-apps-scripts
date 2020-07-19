@@ -30,6 +30,8 @@ With [Google Apps-Script](https://script.google.com/) triggers can be set to per
 
 Check trigger https://script.google.com/ which version is referenced!
 
+The other way around is pulling changes that were made online inthe Google Apps online editor: `clasp pull`.
+
 
 # Known Problems
 
